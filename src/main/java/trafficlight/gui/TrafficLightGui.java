@@ -31,6 +31,15 @@ public class TrafficLightGui extends JFrame implements ActionListener {
 
     private void initLights(TrafficLightCtrl ctrl) {
         //TODO implement a part of the pattern here
+        green = new TrafficLight(Color.GREEN);
+        ctrl.addObserver(green);
+        yellow = new TrafficLight(Color.YELLOW);
+        ctrl.addObserver(yellow);
+        red = new TrafficLight(Color.RED);
+        ctrl.addObserver(red);
+
+
+
         //create the TrafficLight
         //connect subject and observer
     }

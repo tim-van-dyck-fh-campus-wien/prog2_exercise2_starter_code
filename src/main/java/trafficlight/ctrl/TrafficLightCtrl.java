@@ -1,10 +1,17 @@
 package trafficlight.ctrl;
 
+import trafficlight.gui.TrafficLight;
 import trafficlight.gui.TrafficLightGui;
+import trafficlight.observer.Observer;
+import trafficlight.observer.Subject;
 import trafficlight.states.State;
 
-public class TrafficLightCtrl {
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
+public class TrafficLightCtrl implements Subject {
+    private static  TrafficLightCtrl instance = null;
     private State greenState;
 
     private State redState;
@@ -19,10 +26,18 @@ public class TrafficLightCtrl {
 
     private boolean doRun = true;
 
-    public TrafficLightCtrl() {
+    public static TrafficLightCtrl getInstance() {
+        if (instance == null) {
+            instance = new TrafficLightCtrl();
+        }
+        return instance;
+    }
+    private List<Observer> observers = new ArrayList<>();
+    private TrafficLightCtrl() {
         super();
         initStates();
         gui = new TrafficLightGui(this);
+        update(currentState);
         gui.setVisible(true);
         //TODO useful to update the current state
     }
@@ -39,6 +54,10 @@ public class TrafficLightCtrl {
             public String getColor() {
                 return "green";
             }
+            @Override
+            public Color getAWTColor(){
+                return Color.GREEN;
+            }
         };
 
         redState = new State() {
@@ -51,6 +70,10 @@ public class TrafficLightCtrl {
             @Override
             public String getColor() {
                 return "red";
+            }
+            @Override
+            public Color getAWTColor(){
+                return Color.RED;
             }
         };
 
@@ -70,6 +93,10 @@ public class TrafficLightCtrl {
             @Override
             public String getColor() {
                 return "yellow";
+            }
+            @Override
+            public Color getAWTColor(){
+                return Color.YELLOW;
             }
         };
         currentState = greenState;
@@ -94,6 +121,8 @@ public class TrafficLightCtrl {
             try {
                 Thread.sleep(intervall);
                 nextState();
+                update(currentState);
+                //System.out.println(currentState.getColor());
             } catch (InterruptedException e) {
                 gui.showErrorMessage(e);
             }
@@ -108,5 +137,22 @@ public class TrafficLightCtrl {
 
     public void stop() {
         doRun = false;
+    }
+
+    @Override
+    public <T extends Observer> void addObserver(T t) {
+        this.observers.add(t);
+    }
+
+    @Override
+    public <T extends Observer> void removeObserver(T t) {
+        this.observers.remove(t);
+    }
+
+    @Override
+    public void update(State s) {
+        for(Observer obs:this.observers){
+            obs.update(s);
+        }
     }
 }
